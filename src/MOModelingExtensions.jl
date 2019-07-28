@@ -128,6 +128,16 @@ end
 
 # Boolean operators.
 
+function Base.:!(a::AbstractVariableRef)::AffExpr
+    _check_var_is_binary(a)
+    return 1 - a
+end
+
+function Base.:~(a::AbstractVariableRef)::AffExpr
+    _check_var_is_binary(a)
+    return 1 - a
+end
+
 function Base.:&(a::AbstractVariableRef, b::AbstractVariableRef)::AbstractVariableRef
     model = owner_model(a)
     check_belongs_to_model(b, model)
