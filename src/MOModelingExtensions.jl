@@ -24,8 +24,8 @@ function max(a::AbstractVariableRef, b::AbstractVariableRef)::AbstractVariableRe
         _check_var_has_bounds(var)
     end
 
-    x_lower_bound = maximum([lower_bound(a), lower_bound(b)])
-    x_upper_bound = maximum([upper_bound(a), upper_bound(b)])
+    x_lower_bound = max(lower_bound(a), lower_bound(b))
+    x_upper_bound = max(upper_bound(a), upper_bound(b))
     # Maximum difference between a and b.
     M = max(abs(lower_bound(a) - upper_bound(b)), abs(lower_bound(b) - upper_bound(a)))
 
@@ -52,8 +52,8 @@ function min(a::AbstractVariableRef, b::AbstractVariableRef)::AbstractVariableRe
         _check_var_has_bounds(var)
     end
 
-    x_lower_bound = minimum(lower_bound_index(a), lower_bound_index(b))
-    x_upper_bound = minimum(upper_bound_index(a), upper_bound_index(b))
+    x_lower_bound = min(lower_bound_index(a), lower_bound_index(b))
+    x_upper_bound = min(upper_bound_index(a), upper_bound_index(b))
     # Maximum difference between a and b.
     M = maximum(abs(lower_bound_index(a) - upper_bound_index(b)), abs(lower_bound_index(b) - upper_bound_index(a)))
 
