@@ -126,4 +126,36 @@ function minimum(vars::AbstractVector{<:AbstractVariableRef})::AbstractVariableR
     return x
 end
 
+# Boolean operators.
+
+function Base.:&(a::AbstractVariableRef, b::AbstractVariableRef)::AbstractVariableRef
+    model = owner_model(a)
+    check_belongs_to_model(b, model)
+
+    _check_var_is_binary(a)
+    _check_var_is_binary(b)
+
+    z = @variable(model, binary=true)
+    @constraint(model, z <= a)
+    @constraint(model, z <= b)
+    @constraint(model, z <= a + b - 1)
+
+    return z
+end
+
+function Base.:|(a::AbstractVariableRef, b::AbstractVariableRef)::AbstractVariableRef
+    model = owner_model(a)
+    check_belongs_to_model(b, model)
+
+    _check_var_is_binary(a)
+    _check_var_is_binary(b)
+
+    z = @variable(model, binary=true)
+    @constraint(model, z >= a)
+    @constraint(model, z >= b)
+    @constraint(model, z <= a + b)
+
+    return z
+end
+
 end
