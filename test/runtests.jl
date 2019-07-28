@@ -206,7 +206,7 @@ using Test, GLPK
     end
 
     @testset "Boolean operators" begin
-        @testset "And" begin
+        @testset "&" begin
             m = Model(with_optimizer(GLPK.Optimizer))
             @variable(m, x, Bin)
             @variable(m, y, Bin)
@@ -228,16 +228,68 @@ using Test, GLPK
             @test termination_status(m) == MOI.INFEASIBLE
         end
 
-        @testset "Or" begin
+        @testset "all([x, y])" begin
             m = Model(with_optimizer(GLPK.Optimizer))
             @variable(m, x, Bin)
             @variable(m, y, Bin)
-            @constraint(m, x | y == 1)
+            @constraint(m, all([x, y]) == 1)
             @objective(m, Max, x + y)
             optimize!(m)
 
             @test value(x) ≈ 1.0
             @test value(y) ≈ 1.0
+
+            m = Model(with_optimizer(GLPK.Optimizer))
+            @variable(m, x, Bin)
+            @variable(m, y, Bin)
+            @constraint(m, all([x, y]) == 1)
+            @constraint(m, x + y <= 1)
+            @objective(m, Max, x + y)
+            optimize!(m)
+
+            @test termination_status(m) == MOI.INFEASIBLE
+        end
+
+        @testset "all([x, y, z])" begin
+            m = Model(with_optimizer(GLPK.Optimizer))
+            @variable(m, x, Bin)
+            @variable(m, y, Bin)
+            @variable(m, z, Bin)
+            @constraint(m, all([x, y, z]) == 1)
+            @objective(m, Max, x + y)
+            optimize!(m)
+
+            @test value(x) ≈ 1.0
+            @test value(y) ≈ 1.0
+            @test value(z) ≈ 1.0
+
+            m = Model(with_optimizer(GLPK.Optimizer))
+            @variable(m, x, Bin)
+            @variable(m, y, Bin)
+            @variable(m, z, Bin)
+            @constraint(m, all([x, y, z]) == 1)
+            @constraint(m, x + y <= 1)
+            @objective(m, Max, x + y + z)
+            optimize!(m)
+
+            @test termination_status(m) == MOI.INFEASIBLE
+        end
+
+        @testset "|" begin
+            m = Model(with_optimizer(GLPK.Optimizer))
+            @variable(m, x, Bin)
+            @variable(m, y, Bin)
+            @constraint(m, x | y == 1)
+            @objective(m, Min, x + y)
+            optimize!(m)
+
+            if value(x) ≈ 1.0
+                @test value(x) ≈ 1.0
+                @test value(y) ≈ 0.0
+            else
+                @test value(x) ≈ 0.0
+                @test value(y) ≈ 1.0
+            end
 
             m = Model(with_optimizer(GLPK.Optimizer))
             @variable(m, x, Bin)
@@ -254,6 +306,51 @@ using Test, GLPK
                 @test value(x) ≈ 0.0
                 @test value(y) ≈ 1.0
             end
+        end
+
+        @testset "any([x, y])" begin
+            m = Model(with_optimizer(GLPK.Optimizer))
+            @variable(m, x, Bin)
+            @variable(m, y, Bin)
+            @constraint(m, any([x, y]) == 1)
+            @objective(m, Min, x + y)
+            optimize!(m)
+
+            if value(x) ≈ 1.0
+                @test value(x) ≈ 1.0
+                @test value(y) ≈ 0.0
+            else
+                @test value(x) ≈ 0.0
+                @test value(y) ≈ 1.0
+            end
+
+            m = Model(with_optimizer(GLPK.Optimizer))
+            @variable(m, x, Bin)
+            @variable(m, y, Bin)
+            @constraint(m, any([x, y]) == 1)
+            @constraint(m, x + y <= 1)
+            @objective(m, Max, x + y)
+            optimize!(m)
+
+            if value(x) ≈ 1.0
+                @test value(x) ≈ 1.0
+                @test value(y) ≈ 0.0
+            else
+                @test value(x) ≈ 0.0
+                @test value(y) ≈ 1.0
+            end
+        end
+
+        @testset "any([x, y, z])" begin
+            m = Model(with_optimizer(GLPK.Optimizer))
+            @variable(m, x, Bin)
+            @variable(m, y, Bin)
+            @variable(m, z, Bin)
+            @constraint(m, any([x, y, z]) == 1)
+            @objective(m, Min, x + y + z)
+            optimize!(m)
+
+            @test value(x) + value(y) + value(z) ≈ 1.0
         end
     end
 end

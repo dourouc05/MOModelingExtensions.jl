@@ -1,7 +1,7 @@
 module MOModelingExtensions
 
 using JuMP
-import Base: max, min, maximum, minimum, &, |
+import Base: max, min, maximum, minimum, &, |, any, all
 
 function _check_var_has_bounds(var::AbstractVariableRef)
     if ! has_lower_bound(var)
@@ -138,7 +138,24 @@ function Base.:&(a::AbstractVariableRef, b::AbstractVariableRef)::AbstractVariab
     z = @variable(model, binary=true)
     @constraint(model, z <= a)
     @constraint(model, z <= b)
-    @constraint(model, z <= a + b - 1)
+    @constraint(model, z >= a + b - 1)
+
+    return z
+end
+
+function Base.all(vars::AbstractVector{<:AbstractVariableRef})::AbstractVariableRef
+    model = owner_model(vars[1])
+    for var in vars # TODO: Only check for first variable.
+        check_belongs_to_model(var, model)
+    end
+
+    for var in vars
+        _check_var_is_binary(var)
+    end
+
+    z = @variable(model, binary=true)
+    @constraint(model, [var in eachindex(vars)], z <= vars[var])
+    @constraint(model, z >= sum(vars) - length(vars) + 1)
 
     return z
 end
@@ -154,6 +171,23 @@ function Base.:|(a::AbstractVariableRef, b::AbstractVariableRef)::AbstractVariab
     @constraint(model, z >= a)
     @constraint(model, z >= b)
     @constraint(model, z <= a + b)
+
+    return z
+end
+
+function Base.any(vars::AbstractVector{<:AbstractVariableRef})::AbstractVariableRef
+    model = owner_model(vars[1])
+    for var in vars # TODO: Only check for first variable.
+        check_belongs_to_model(var, model)
+    end
+
+    for var in vars
+        _check_var_is_binary(var)
+    end
+
+    z = @variable(model, binary=true)
+    @constraint(model, [var in eachindex(vars)], z >= vars[var])
+    @constraint(model, z <= sum(vars))
 
     return z
 end
