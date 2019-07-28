@@ -72,7 +72,7 @@ using Test, GLPK
                 @variable(m, 0 <= y <= 5)
                 @variable(m, 4 <= z <= 5)
                 @constraint(m, maximum([x, y, z]) <= 4)
-                @objective(m, Max, x + y)
+                @objective(m, Max, x + y + z)
                 optimize!(m)
 
                 @test value(x) ≈ 4.0
@@ -167,7 +167,7 @@ using Test, GLPK
                 @variable(m, 0 <= y <= 5)
                 @variable(m, 4 <= z <= 5)
                 @constraint(m, minimum([x, y, z]) <= 4)
-                @objective(m, Max, x + y)
+                @objective(m, Max, x + y + z)
                 optimize!(m)
 
                 if value(x) ≈ 4.0
