@@ -42,8 +42,8 @@ end
 
 function min(a::AbstractVariableRef, b::AbstractVariableRef)::AbstractVariableRef
     # Return a new variable, x. This function uses an internal binary variable, z.
-    # Model: x >= a + z * M, x >= b + (1 - z) * M,   x >= a, x >= b
-    #        \_________ x >= min{a, b} _________/ \_ x >= min{a, b} _/
+    # Model: x >= a + z * M, x >= b + (1 - z) * M,   x <= a, x <= b
+    #        \_________ x >= min{a, b} _________/ \_ x <= min{a, b} _/
     # Interpretation: z = 0 if a is the minimum, 1 if it is b.
     model = owner_model(a)
     check_belongs_to_model(b, model)
@@ -52,16 +52,16 @@ function min(a::AbstractVariableRef, b::AbstractVariableRef)::AbstractVariableRe
         _check_var_has_bounds(var)
     end
 
-    x_lower_bound = min(lower_bound_index(a), lower_bound_index(b))
-    x_upper_bound = min(upper_bound_index(a), upper_bound_index(b))
+    x_lower_bound = min(lower_bound(a), lower_bound(b))
+    x_upper_bound = min(upper_bound(a), upper_bound(b))
     # Maximum difference between a and b.
-    M = maximum(abs(lower_bound_index(a) - upper_bound_index(b)), abs(lower_bound_index(b) - upper_bound_index(a)))
+    M = max(abs(lower_bound(a) - upper_bound(b)), abs(lower_bound(b) - upper_bound(a)))
 
     x = @variable(model, lower_bound=x_lower_bound, upper_bound=x_upper_bound)
     z = @variable(model, binary=true)
 
-    @constraint(model, x >= a + M * z)
-    @constraint(model, x >= b + M * (1 - z))
+    @constraint(model, x >= a - M * z)
+    @constraint(model, x >= b - M * (1 - z))
     @constraint(model, x <= a)
     @constraint(model, x <= b)
 
