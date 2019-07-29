@@ -128,12 +128,12 @@ end
 
 # Boolean operators.
 
-function Base.:!(a::AbstractVariableRef)::AffExpr
+function Base.:!(a::Union{AbstractVariableRef, AffExpr})::AffExpr
     _check_var_is_binary(a)
     return 1 - a
 end
 
-function Base.:~(a::AbstractVariableRef)::AffExpr
+function Base.:~(a::Union{AbstractVariableRef, AffExpr})::AffExpr
     _check_var_is_binary(a)
     return 1 - a
 end
