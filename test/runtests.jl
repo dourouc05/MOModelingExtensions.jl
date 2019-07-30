@@ -352,5 +352,22 @@ using Test, GLPK
 
             @test value(x) + value(y) + value(z) ≈ 1.0
         end
+
+        @testset "⊻" begin
+            m = Model(with_optimizer(GLPK.Optimizer))
+            @variable(m, x, Bin)
+            @variable(m, y, Bin)
+            @constraint(m, x ⊻ y == true)
+            @objective(m, Min, x + y)
+            optimize!(m)
+
+            if value(x) ≈ 1.0
+                @test value(x) ≈ 1.0
+                @test value(y) ≈ 0.0
+            else
+                @test value(x) ≈ 0.0
+                @test value(y) ≈ 1.0
+            end
+        end
     end
 end
