@@ -1,7 +1,7 @@
 module MOModelingExtensions
 
 using JuMP
-import Base: max, min, maximum, minimum, &, |, any, all, ⊻, !, ~
+import Base: max, min, maximum, minimum, &, |, any, all, ⊻, !, ~, ⇒
 
 function _check_var_has_bounds(var::AbstractVariableRef)
     if ! has_lower_bound(var)
@@ -217,5 +217,19 @@ function Base.:⊻(a::AbstractVariableRef, b::AbstractVariableRef)::AbstractVari
 
     return z
 end
+
+# Don't override Pair or =>, as this might have unwanted side effects (could
+# no more create a dictionary (variable, variable), for instance).
+# function Base.:⇒(a::AbstractVariableRef, b::AbstractVariableRef)::AbstractVariableRef
+#     model = owner_model(a)
+#     check_belongs_to_model(b, model)
+#
+#     _check_var_is_binary(a)
+#     _check_var_is_binary(b)
+#
+#     @constraint(model, a <= b)
+#
+#     # TODO: What should this function return?
+# end
 
 end
