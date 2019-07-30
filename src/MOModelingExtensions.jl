@@ -1,7 +1,7 @@
 module MOModelingExtensions
 
 using JuMP
-import Base: max, min, maximum, minimum, &, |, any, all
+import Base: max, min, maximum, minimum, &, |, any, all, ⊻, !, ~
 
 function _check_var_has_bounds(var::AbstractVariableRef)
     if ! has_lower_bound(var)
@@ -128,12 +128,12 @@ end
 
 # Boolean operators.
 
-function Base.:!(a::Union{AbstractVariableRef, AffExpr})::AffExpr
+function Base.:!(a::AbstractVariableRef)::AffExpr
     _check_var_is_binary(a)
     return 1 - a
 end
 
-function Base.:~(a::Union{AbstractVariableRef, AffExpr})::AffExpr
+function Base.:~(a::AbstractVariableRef)::AffExpr
     _check_var_is_binary(a)
     return 1 - a
 end
@@ -198,6 +198,22 @@ function Base.any(vars::AbstractVector{<:AbstractVariableRef})::AbstractVariable
     z = @variable(model, binary=true)
     @constraint(model, [var in eachindex(vars)], z >= vars[var])
     @constraint(model, z <= sum(vars))
+
+    return z
+end
+
+function Base.:⊻(a::AbstractVariableRef, b::AbstractVariableRef)::AbstractVariableRef
+    model = owner_model(a)
+    check_belongs_to_model(b, model)
+
+    _check_var_is_binary(a)
+    _check_var_is_binary(b)
+
+    z = @variable(model, binary=true)
+    @constraint(model, z <= a + b)
+    @constraint(model, z >= a - b)
+    @constraint(model, z >= b - a)
+    @constraint(model, z <= 2 - a - b)
 
     return z
 end
